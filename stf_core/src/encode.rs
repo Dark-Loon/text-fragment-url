@@ -29,6 +29,11 @@ mod tests {
         assert_eq!("%20", encode_special_characters(" "));
         assert_eq!("hello%20world", encode_special_characters("hello world"));
         assert_eq!("a%2Cb", encode_special_characters("a,b"));
+        assert_eq!(
+            "%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-",
+            encode_special_characters("البحرين-")
+        );
+        assert_eq!("%D9%85%D9%90%D8%B5%D8%B1", encode_special_characters("مِصر"));
     }
 }
 
