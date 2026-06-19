@@ -17,19 +17,19 @@ impl TextFragment {
         suffix: Option<String>,
     ) -> TextFragment {
         TextFragment {
-            start: start,
-            end: end,
-            prefix: prefix,
-            suffix: suffix,
+            start,
+            end,
+            prefix,
+            suffix,
         }
     }
 
-    pub fn to_directive(self) -> String {
+    pub fn to_directive(&self) -> String {
         let mut string = String::from("#:~:text=");
-        let comma = String::from(",");
-        let dash = String::from("-");
+        let comma = ",";
+        let dash = "-";
 
-        if let Some(value) = self.prefix {
+        if let Some(value) = &self.prefix {
             let encoded_value = encode_special_characters(&value);
 
             string.push_str(&encoded_value);
@@ -40,14 +40,14 @@ impl TextFragment {
         let encoded_value = encode_special_characters(&self.start);
         string.push_str(&encoded_value);
 
-        if let Some(value) = self.end {
+        if let Some(value) = &self.end {
             let encoded_value = encode_special_characters(&value);
 
             string.push_str(&comma);
             string.push_str(&encoded_value);
         }
 
-        if let Some(value) = self.suffix {
+        if let Some(value) = &self.suffix {
             let encoded_value = encode_special_characters(&value);
 
             string.push_str(&comma);

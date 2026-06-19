@@ -1,16 +1,27 @@
-use std::fmt;
 use thiserror::Error;
+use url::Url;
 
 use crate::fragment::TextFragment;
 
 pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, FragmentError> {
-    fragment.to_directive();
+    if fragment.start.trim().is_empty() {
+        return Err(FragmentError::EmptyTextStart);
+    }
+
+    let base = Url::parse(base)?;
+
+    let directive = fragment.to_directive();
+
+    let combined = base.join(&directive)?;
+    let result = combined.to_string();
+
+    Ok(combined.to_string())
 }
 
 #[derive(Debug, Error, PartialEq)]
 pub enum FragmentError {
     #[error("invalid base URL: {0}")]
-    InvalidBaseUrl(String),
+    InvalidBaseUrl(#[from] url::ParseError),
 
     #[error("text_start must not be empty")]
     EmptyTextStart,
@@ -20,6 +31,23 @@ pub enum FragmentError {
 mod tests {
     use super::*;
 
+    // #[test]
+    // fn rejects_empty_text_start() {
+    //     let fragment = TextFragment::new(String::new(), None, None, None);
+
+    //     assert_eq!(
+    //         build_url("https://example.com", &fragment),
+    //         Err(FragmentError::EmptyTextStart)
+    //     );
+    // }
+
+    // #[test]
+    // fn rejects_invalid_base_url() {
+    //     let fragment = TextFragment::new(String::from("human"), None, None, None);
+
+    //     assert!(build_url("not a url", &fragment).is_err());
+    // }
+
     #[test]
     fn should_return_full_url() {
         let mut fragment =
@@ -27,7 +55,7 @@ mod tests {
 
         assert_eq!(
             build_url("https://example.com", &fragment),
-            Ok(String::from("https://example.com#:~:text=human,URL"))
+            Ok(String::from("https://example.com/#:~:text=human,URL"))
         );
 
         fragment = TextFragment::new(
@@ -42,13 +70,13 @@ mod tests {
         assert_eq!(
             build_url("https://example.com", &fragment),
             Ok(String::from(
-                "https://example.com#:~:text=The%20first%20recorded%20idea%20of%20using%20digital%20electronics%20for%20computing%20was%20the%201931%20paper%20%22The%20Use%20of%20Thyratrons%20for%20High%20Speed%20Automatic%20Counting%20of%20Physical%20Phenomena%22%20by%20C.%20E.%20Wynn-Williams"
+                "https://example.com/#:~:text=The%20first%20recorded%20idea%20of%20using%20digital%20electronics%20for%20computing%20was%20the%201931%20paper%20%22The%20Use%20of%20Thyratrons%20for%20High%20Speed%20Automatic%20Counting%20of%20Physical%20Phenomena%22%20by%20C.%20E.%20Wynn-Williams."
             ))
         );
 
         fragment = TextFragment::new(
-            String::from("linked%20URL"),
-            Some(String::from("defining%20a%20value")),
+            String::from("linked URL"),
+            Some(String::from("defining a value")),
             None,
             None,
         );
@@ -56,35 +84,38 @@ mod tests {
         assert_eq!(
             build_url("https://example.com", &fragment),
             Ok(String::from(
-                "https://example.com#:~:text=linked%20URL,defining%20a%20value"
+                "https://example.com/#:~:text=linked%20URL,defining%20a%20value"
             ))
         );
 
         fragment = TextFragment::new(
-            String::from("%D9%85%D9%90%D8%B5%D8%B1"),
+            String::from("مِصر"),
             None,
-            Some(String::from("%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86")),
+            Some(String::from("البحرين")),
             None,
         );
 
         assert_eq!(
             build_url("https://example.com", &fragment),
             Ok(String::from(
-                "https://example.com#:~:text=%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-,%D9%85%D9%90%D8%B5%D8%B1"
+                "https://example.com/#:~:text=%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-,%D9%85%D9%90%D8%B5%D8%B1"
             ))
         );
 
         fragment = TextFragment::new(
-            String::from("The%20Referer"),
-            Some(String::from("be%20sent")),
+            String::from("The Referer"),
+            Some(String::from("be sent")),
             Some(String::from("downgrade:")),
-            Some(String::from("to%20origins")),
+            Some(String::from("to origins")),
         );
 
         assert_eq!(
-            build_url("https://example.com", &fragment),
+            build_url(
+                "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a",
+                &fragment
+            ),
             Ok(String::from(
-                "https://example.com#:~:text=downgrade%3A-,The%20Referer,be%20sent,-to%20origins"
+                "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a#:~:text=downgrade%3A-,The%20Referer,be%20sent,-to%20origins"
             ))
         );
     }
