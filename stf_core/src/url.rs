@@ -7,7 +7,10 @@ pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, Fragment
 }
 
 #[derive(Debug, PartialEq)]
-pub struct FragmentError;
+pub enum FragmentError {
+    InvalidBaseUrl(String),
+    EmptyTextStart,
+}
 
 impl fmt::Display for FragmentError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
