@@ -1,3 +1,5 @@
+use crate::encode::encode_special_characters;
+
 /// Represent the text fragment directive
 /// See: https://wicg.github.io/scroll-to-text-fragment/
 pub struct TextFragment {
@@ -28,22 +30,29 @@ impl TextFragment {
         let dash = String::from("-");
 
         if let Some(value) = self.prefix {
-            string.push_str(&value);
+            let encoded_value = encode_special_characters(&value);
+
+            string.push_str(&encoded_value);
             string.push_str(&dash);
             string.push_str(&comma);
         }
 
-        string.push_str(&self.start);
+        let encoded_value = encode_special_characters(&self.start);
+        string.push_str(&encoded_value);
 
         if let Some(value) = self.end {
+            let encoded_value = encode_special_characters(&value);
+
             string.push_str(&comma);
-            string.push_str(&value);
+            string.push_str(&encoded_value);
         }
 
         if let Some(value) = self.suffix {
+            let encoded_value = encode_special_characters(&value);
+
             string.push_str(&comma);
             string.push_str(&dash);
-            string.push_str(&value);
+            string.push_str(&encoded_value);
         }
 
         string
@@ -63,7 +72,7 @@ mod tests {
 
         fragment = TextFragment::new(
             String::from(
-                "The%20first%20recorded%20idea%20of%20using%20digital%20electronics%20for%20computing%20was%20the%201931%20paper%20%22The%20Use%20of%20Thyratrons%20for%20High%20Speed%20Automatic%20Counting%20of%20Physical%20Phenomena%22%20by%20C.%20E.%20Wynn-Williams",
+                "The first recorded idea of using digital electronics for computing was the 1931 paper \"The Use of Thyratrons for High Speed Automatic Counting of Physical Phenomena\" by C. E. Wynn-Williams.",
             ),
             None,
             None,
@@ -72,12 +81,12 @@ mod tests {
 
         assert_eq!(
             fragment.to_directive(),
-            "#:~:text=The%20first%20recorded%20idea%20of%20using%20digital%20electronics%20for%20computing%20was%20the%201931%20paper%20%22The%20Use%20of%20Thyratrons%20for%20High%20Speed%20Automatic%20Counting%20of%20Physical%20Phenomena%22%20by%20C.%20E.%20Wynn-Williams"
+            "#:~:text=The%20first%20recorded%20idea%20of%20using%20digital%20electronics%20for%20computing%20was%20the%201931%20paper%20%22The%20Use%20of%20Thyratrons%20for%20High%20Speed%20Automatic%20Counting%20of%20Physical%20Phenomena%22%20by%20C.%20E.%20Wynn-Williams."
         );
 
         fragment = TextFragment::new(
-            String::from("linked%20URL"),
-            Some(String::from("defining%20a%20value")),
+            String::from("linked URL"),
+            Some(String::from("defining a value")),
             None,
             None,
         );
@@ -88,9 +97,9 @@ mod tests {
         );
 
         fragment = TextFragment::new(
-            String::from("%D9%85%D9%90%D8%B5%D8%B1"),
+            String::from("مِصر"),
             None,
-            Some(String::from("%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86")),
+            Some(String::from("البحرين")),
             None,
         );
 
@@ -100,15 +109,15 @@ mod tests {
         );
 
         fragment = TextFragment::new(
-            String::from("The%20Referer"),
-            Some(String::from("be%20sent")),
+            String::from("The Referer"),
+            Some(String::from("be sent")),
             Some(String::from("downgrade:")),
-            Some(String::from("to%20origins")),
+            Some(String::from("to origins")),
         );
 
         assert_eq!(
             fragment.to_directive(),
-            "#:~:text=downgrade:-,The%20Referer,be%20sent,-to%20origins"
+            "#:~:text=downgrade%3A-,The%20Referer,be%20sent,-to%20origins"
         );
     }
 }

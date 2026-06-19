@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::fragment::TextFragment;
 
 pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, FragmentError> {
@@ -6,6 +8,12 @@ pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, Fragment
 
 #[derive(Debug, PartialEq)]
 pub struct FragmentError;
+
+impl fmt::Display for FragmentError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "some error")
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -23,7 +31,7 @@ mod tests {
 
         fragment = TextFragment::new(
             String::from(
-                "The%20first%20recorded%20idea%20of%20using%20digital%20electronics%20for%20computing%20was%20the%201931%20paper%20%22The%20Use%20of%20Thyratrons%20for%20High%20Speed%20Automatic%20Counting%20of%20Physical%20Phenomena%22%20by%20C.%20E.%20Wynn-Williams",
+                "The first recorded idea of using digital electronics for computing was the 1931 paper \"The Use of Thyratrons for High Speed Automatic Counting of Physical Phenomena\" by C. E. Wynn-Williams.",
             ),
             None,
             None,
@@ -75,7 +83,7 @@ mod tests {
         assert_eq!(
             build_url("https://example.com", &fragment),
             Ok(String::from(
-                "https://example.com#:~:text=downgrade:-,The%20Referer,be%20sent,-to%20origins"
+                "https://example.com#:~:text=downgrade%3A-,The%20Referer,be%20sent,-to%20origins"
             ))
         );
     }
