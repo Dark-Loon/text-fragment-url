@@ -25,9 +25,11 @@ impl TextFragment {
     pub fn to_directive(self) -> String {
         let mut string = String::from("#:~:text=");
         let comma = String::from(",");
+        let dash = String::from("-");
 
         if let Some(value) = self.prefix {
             string.push_str(&value);
+            string.push_str(&dash);
             string.push_str(&comma);
         }
 
@@ -40,6 +42,7 @@ impl TextFragment {
 
         if let Some(value) = self.suffix {
             string.push_str(&comma);
+            string.push_str(&dash);
             string.push_str(&value);
         }
 
@@ -84,23 +87,23 @@ mod tests {
             "#:~:text=linked%20URL,defining%20a%20value"
         );
 
-        // fragment = TextFragment::new(
-        //     String::from("البحرين-"),
-        //     None,
-        //     Some(String::from("مِصر")),
-        //     None,
-        // );
+        fragment = TextFragment::new(
+            String::from("%D9%85%D9%90%D8%B5%D8%B1"),
+            None,
+            Some(String::from("%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86")),
+            None,
+        );
 
-        // assert_eq!(
-        //     fragment.to_directive(),
-        //     "#:~:text=%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-,%D9%85%D8%B5%D8%B1"
-        // );
+        assert_eq!(
+            fragment.to_directive(),
+            "#:~:text=%D8%A7%D9%84%D8%A8%D8%AD%D8%B1%D9%8A%D9%86-,%D9%85%D9%90%D8%B5%D8%B1"
+        );
 
         fragment = TextFragment::new(
             String::from("The%20Referer"),
             Some(String::from("be%20sent")),
-            Some(String::from("downgrade:-")),
-            Some(String::from("-to%20origins")),
+            Some(String::from("downgrade:")),
+            Some(String::from("to%20origins")),
         );
 
         assert_eq!(
