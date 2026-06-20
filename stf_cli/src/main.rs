@@ -3,8 +3,9 @@ use std::{
     process::ExitCode,
 };
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 
+use clap_complete::{Shell, generate};
 use inquire::{Confirm, InquireError, Text, required, validator::Validation};
 use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
@@ -12,6 +13,13 @@ use url::Url;
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+
+    if let Some(shell) = cli.completions {
+        let mut cmd = Cli::command();
+        let bin_name = cmd.get_name().to_string();
+        generate(shell, &mut cmd, bin_name, &mut io::stdout());
+        return ExitCode::SUCCESS;
+    }
 
     let stdin_text = if !io::stdin().is_terminal() {
         let mut buf = String::new();
@@ -170,6 +178,16 @@ struct Cli {
     /// Print details about how the URL was constructed
     #[arg(short, long)]
     verbose: bool,
+
+    /// Generate a shell completion script and print it to stdout
+    #[arg(
+        long,
+        value_enum,
+        value_name = "SHELL",
+        exclusive = true,
+        help_heading = "Shell Completions"
+    )]
+    completions: Option<Shell>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -298,6 +316,7 @@ mod resolve_mode_tests {
             prefix: prefix.map(String::from),
             suffix: suffix.map(String::from),
             verbose: false,
+            completions: None,
         }
     }
 
