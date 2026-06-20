@@ -30,28 +30,28 @@ impl TextFragment {
         let dash = "-";
 
         if let Some(value) = &self.prefix {
-            let encoded_value = encode_special_characters(&value);
+            let encoded_value = encode_special_characters(value);
 
             string.push_str(&encoded_value);
-            string.push_str(&dash);
-            string.push_str(&comma);
+            string.push_str(dash);
+            string.push_str(comma);
         }
 
         let encoded_value = encode_special_characters(&self.start);
         string.push_str(&encoded_value);
 
         if let Some(value) = &self.end {
-            let encoded_value = encode_special_characters(&value);
+            let encoded_value = encode_special_characters(value);
 
-            string.push_str(&comma);
+            string.push_str(comma);
             string.push_str(&encoded_value);
         }
 
         if let Some(value) = &self.suffix {
-            let encoded_value = encode_special_characters(&value);
+            let encoded_value = encode_special_characters(value);
 
-            string.push_str(&comma);
-            string.push_str(&dash);
+            string.push_str(comma);
+            string.push_str(dash);
             string.push_str(&encoded_value);
         }
 

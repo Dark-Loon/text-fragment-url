@@ -15,7 +15,6 @@ pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, Fragment
     let combined = base
         .join(&directive)
         .map_err(|e| FragmentError::InvalidBaseUrl(e.to_string()))?;
-    let result = combined.to_string();
 
     Ok(combined.to_string())
 }
