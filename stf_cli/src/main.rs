@@ -1,18 +1,38 @@
-use std::process;
+use std::{
+    io::{self, IsTerminal, Read},
+    process::ExitCode,
+};
 
 use clap::Parser;
 
 use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
 
-fn main() {
-    // let cli = Cli::parse();
+fn main() -> ExitCode {
+    let cli = Cli::parse();
 
-    // if let Err(e) = run(cli) {
-    //     eprint!("error: {}", e);
+    let stdin_text = if !io::stdin().is_terminal() {
+        let mut buf = String::new();
+        io::stdin().read_to_string(&mut buf).ok();
+        Some(buf.trim().to_string())
+    } else {
+        None
+    };
 
-    //     process::exit(1);
-    // }
+    let result = resolve_mode(&cli, stdin_text)
+        .map_err(RunError::from)
+        .and_then(run);
+
+    match result {
+        Ok(url) => {
+            println!("{}", url);
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("error: {}", e);
+            ExitCode::FAILURE
+        }
+    }
 }
 
 fn run(mode: Mode) -> Result<String, RunError> {
@@ -86,10 +106,7 @@ enum Mode {
 #[derive(Debug, Error, PartialEq)]
 enum ModeError {
     #[error(
-        "
-        no text to highlight\n \
-        pass it directly:  stf {{url}} \"text to highlight\"\n \
-        or pipe it in:     your clipboard-command | stf {{url}}"
+        "no text to highlight\npass it directly:  stf {{url}} \"text to highlight\"\nor pipe it in:     your clipboard-command | stf {{url}}"
     )]
     MissingText,
 

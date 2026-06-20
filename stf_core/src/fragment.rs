@@ -9,6 +9,10 @@ pub struct TextFragment {
     pub suffix: Option<String>,
 }
 
+// TextFragment::from_text(text: &str, prefix: Option<String>, suffix: Option<String>) -> TextFragment
+//   - char count or grapheme count for the 300 threshold?
+//   - 300 words for range mode?
+//   - unicode-segmentation for word boundaries (handles RTL correctly?)
 impl TextFragment {
     pub fn new(
         start: String,
