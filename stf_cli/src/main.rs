@@ -23,14 +23,44 @@ struct Cli {
 #[derive(Debug, PartialEq)]
 enum Mode {
     Interactive,
-    FromStdin { base: String, text: String },
-    Direct { base: String, text: String },
+    FromStdin {
+        base: String,
+        text: String,
+    },
+    Direct {
+        base: String,
+        text: String,
+        stdin_ignored: bool,
+    },
 }
 
 #[derive(Debug, PartialEq)]
 enum ModeError {
     MissingText,
     MissingBase,
+}
+
+fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError> {
+    match (&cli.base, &cli.text, stdin_text) {
+        (None, None, None) => Ok(Mode::Interactive),
+        (Some(b), None, Some(t)) => Ok(Mode::FromStdin {
+            base: b.clone(),
+            text: t,
+        }),
+        (Some(b), Some(t), None) => Ok(Mode::Direct {
+            base: b.clone(),
+            text: t.clone(),
+            stdin_ignored: false,
+        }),
+        (Some(b), Some(t), Some(_)) => Ok(Mode::Direct {
+            base: b.clone(),
+            text: t.clone(),
+            stdin_ignored: true,
+        }),
+        (Some(_), None, None) => Err(ModeError::MissingText),
+        (None, None, Some(_)) => Err(ModeError::MissingBase),
+        (None, Some(_), _) => unreachable!("missing base"),
+    }
 }
 
 #[cfg(test)]
