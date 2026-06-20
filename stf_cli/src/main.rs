@@ -2,7 +2,7 @@ use std::process;
 
 use clap::Parser;
 
-use stf_core::FragmentError;
+use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
 
 fn main() {
@@ -15,12 +15,38 @@ fn main() {
     // }
 }
 
-fn run(cli: &Cli) -> Result<String, RunError> {
-    // Validate
+fn run(mode: Mode) -> Result<String, RunError> {
+    match mode {
+        Mode::Interactive => Err(RunError::InteractiveNotYetImplemented),
 
-    // Process
+        Mode::FromStdin {
+            base,
+            text,
+            prefix,
+            suffix,
+        } => {
+            let fragment = TextFragment::new(text, None, prefix, suffix);
+            let url = build_url(&base, &fragment)?;
+            Ok(url)
+        }
 
-    Ok(String::new())
+        Mode::Direct {
+            base,
+            text,
+            prefix,
+            suffix,
+            stdin_ignored,
+        } => {
+            if stdin_ignored {
+                eprintln!(
+                    "note: text argument and piped stdin both provided -- using the argument, stdin ignored"
+                );
+            }
+            let fragment = TextFragment::new(text, None, prefix, suffix);
+            let url = build_url(&base, &fragment)?;
+            Ok(url)
+        }
+    }
 }
 
 /// Produce a URL that links directly to specific text in a web page.
@@ -127,16 +153,13 @@ mod run_tests {
     fn direct_mode_builds_url() {
         let mode = Mode::Direct {
             base: String::from("https://example.com"),
-            text: String::from("human"),
+            text: String::from("iceberg"),
             prefix: None,
             suffix: None,
             stdin_ignored: false,
         };
 
-        assert_eq!(
-            run(mode),
-            Ok("https://example.com/#:~:text=human,URL".into())
-        );
+        assert_eq!(run(mode), Ok("https://example.com/#:~:text=iceberg".into()));
     }
 
     #[test]
