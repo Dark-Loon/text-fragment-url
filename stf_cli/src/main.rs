@@ -70,17 +70,36 @@ fn run(mode: Mode) -> Result<String, RunError> {
 }
 
 /// Produce a URL that links directly to specific text in a web page.
+///
+/// When opened, the brower highlights the text and scrolls it into view.
+///
+/// stf supports three ways of providing input -- see EXAMPLES below.
 #[derive(Parser, Debug)]
-#[command(name = "stf")]
-#[command(version = "1.0")]
-#[command(about = "Produce a URL that links directly to specific text in a web page.")]
+#[command(
+    name = "stf",
+    version,
+    about = "Produce a URL that links directly to specific text in a web page.",
+    after_help = "EXAMPLES:\n    \
+                stf https://example.com \"short simple text\"\n   \
+                termux-clipboard-get | stf https://example.com\n   \
+                stf"
+)]
 struct Cli {
+    /// URL of the page to link to
     base: Option<String>,
+
+    /// Text to highlight. Omit to read from a pipe, or omit both BASE and TEXT for an interactive prompt
     text: Option<String>,
-    #[arg(short, long)]
+
+    /// Text immediately before the match, to disambiguate repeated occurrences
+    #[arg(short, long, help_heading = "Disambiguation")]
     prefix: Option<String>,
-    #[arg(short, long)]
+
+    /// Text immediately after the match, to disambiguate repeated occurrences
+    #[arg(short, long, help_heading = "Disambiguation")]
     suffix: Option<String>,
+
+    /// URL of the page to link to
     #[arg(short, long)]
     verbose: bool,
 }
