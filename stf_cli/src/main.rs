@@ -43,7 +43,9 @@ fn main() -> ExitCode {
 
 fn run(mode: Mode) -> Result<String, RunError> {
     match mode {
-        Mode::Interactive => let (base, text, prefix, suffix) = prompt_for_fragment(),
+        Mode::Interactive => {
+            let (base, text, prefix, suffix) = prompt_for_fragment()?;
+        }
 
         Mode::FromStdin {
             base,
@@ -81,10 +83,26 @@ fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<Strin
         .with_help_message("e.g. https://example.com")
         .prompt()?;
 
-    let text = Text::new("What is the text you from the web page you want to link to?")
+    let text = Text::new("What text do you want to link to?")
         .with_validator(required!("This field is required"))
-        .with_help_message("The first recorded idea of using digital electronics for computing was the 1931 paper \"The Use of Thyratrons for High Speed Automatic Counting of Physical Phenomena\" by C. E. Wynn-Williams.")
+        .with_help_message("Paste the exact passage you want highlighted")
         .prompt()?;
+
+    let prefix = Text::new("Prefix (optional)")
+        .with_help_message(
+            "Text immediately before the match, to disambiguate repeated occurrences -- press Enter to skip",
+        )
+        .prompt_skippable()?
+        .filter(|s| !s.trim().is_empty());
+
+    let suffix = Text::new("Suffix (optional)")
+        .with_help_message(
+            "Text immediately after the match, to disambiguate repeated occurrences -- press Enter to skip",
+        )
+        .prompt_skippable()?
+        .filter(|s| !s.trim().is_empty());
+
+    Ok((base, text, prefix, suffix))
 }
 
 /// Produce a URL that links directly to specific text in a web page.
@@ -228,15 +246,10 @@ mod run_tests {
             stdin_ignored: false,
         };
 
-        assert_eq!(run(mode), Ok("https://example.com/#:~:text=iceberg".into()));
-    }
-
-    #[test]
-    fn interactive_mode_is_not_yet_implemented() {
-        assert_eq!(
-            run(Mode::Interactive),
-            Err(RunError::InteractiveNotYetImplemented)
-        );
+        // RunError can't derive PartialEq (InquireError wraps std::io::Error,
+        // which doesn't implement it), so we unwrap and compare the String
+        // payload directly rather than comparing the whole Result.
+        assert_eq!(run(mode).unwrap(), "https://example.com/#:~:text=iceberg");
     }
 }
 
