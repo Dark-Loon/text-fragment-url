@@ -5,6 +5,7 @@ use std::{
 
 use clap::Parser;
 
+use inquire::{InquireError, Text, required};
 use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
 
@@ -42,7 +43,7 @@ fn main() -> ExitCode {
 
 fn run(mode: Mode) -> Result<String, RunError> {
     match mode {
-        Mode::Interactive => Err(RunError::InteractiveNotYetImplemented),
+        Mode::Interactive => let (base, text, prefix, suffix) = prompt_for_fragment(),
 
         Mode::FromStdin {
             base,
@@ -74,9 +75,21 @@ fn run(mode: Mode) -> Result<String, RunError> {
     }
 }
 
+fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<String>), InquireError> {
+    let base = Text::new("What is the base URL?")
+        .with_validator(required!("This field is required"))
+        .with_help_message("e.g. https://example.com")
+        .prompt()?;
+
+    let text = Text::new("What is the text you from the web page you want to link to?")
+        .with_validator(required!("This field is required"))
+        .with_help_message("The first recorded idea of using digital electronics for computing was the 1931 paper \"The Use of Thyratrons for High Speed Automatic Counting of Physical Phenomena\" by C. E. Wynn-Williams.")
+        .prompt()?;
+}
+
 /// Produce a URL that links directly to specific text in a web page.
 ///
-/// When opened, the brower highlights the text and scrolls it into view.
+/// When opened, the browser highlights the text and scrolls it into view.
 ///
 /// stf supports three ways of providing input -- see EXAMPLES below.
 #[derive(Parser, Debug)]
@@ -104,7 +117,7 @@ struct Cli {
     #[arg(short, long, help_heading = "Disambiguation")]
     suffix: Option<String>,
 
-    /// URL of the page to link to
+    /// Print details about how the URL was constructed
     #[arg(short, long)]
     verbose: bool,
 }
@@ -141,13 +154,16 @@ enum ModeError {
     MissingBase,
 }
 
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Error)]
 enum RunError {
     #[error(transparent)]
     Mode(#[from] ModeError),
 
     #[error(transparent)]
     Fragment(#[from] FragmentError),
+
+    #[error(transparent)]
+    Prompt(#[from] InquireError),
 
     #[error("interactive mode isn't implemented yet -- try passing a URL and text directly")]
     InteractiveNotYetImplemented,
