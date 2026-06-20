@@ -120,6 +120,35 @@ fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError
 }
 
 #[cfg(test)]
+mod run_tests {
+    use super::*;
+
+    #[test]
+    fn direct_mode_builds_url() {
+        let mode = Mode::Direct {
+            base: String::from("https://example.com"),
+            text: String::from("human"),
+            prefix: None,
+            suffix: None,
+            stdin_ignored: false,
+        };
+
+        assert_eq!(
+            run(mode),
+            Ok("https://example.com/#:~:text=human,URL".into())
+        );
+    }
+
+    #[test]
+    fn interactive_mode_is_not_yet_implemented() {
+        assert_eq!(
+            run(Mode::Interactive),
+            Err(RunError::InteractiveNotYetImplemented)
+        );
+    }
+}
+
+#[cfg(test)]
 mod resolve_mode_tests {
     use super::*;
 
@@ -148,8 +177,8 @@ mod resolve_mode_tests {
         assert_eq!(
             got,
             Ok(Mode::Direct {
-                base: "https://example.com".into(),
-                text: "hi".into(),
+                base: String::from("https://example.com"),
+                text: String::from("hi"),
                 prefix: None,
                 suffix: None,
                 stdin_ignored: true,
@@ -174,8 +203,8 @@ mod resolve_mode_tests {
         assert_eq!(
             got,
             Ok(Mode::FromStdin {
-                base: "https://example.com".into(),
-                text: "piped".into(),
+                base: String::from("https://example.com"),
+                text: String::from("piped"),
                 prefix: None,
                 suffix: None,
             })
@@ -192,8 +221,8 @@ mod resolve_mode_tests {
         assert_eq!(
             got,
             Ok(Mode::Direct {
-                base: "https://example.com".into(),
-                text: "human".into(),
+                base: String::from("https://example.com"),
+                text: String::from("human"),
                 prefix: None,
                 suffix: None,
                 stdin_ignored: false,
@@ -229,10 +258,10 @@ mod resolve_mode_tests {
         assert_eq!(
             got,
             Ok(Mode::Direct {
-                base: "https://example.com".into(),
-                text: "human".into(),
-                prefix: Some("before".into()),
-                suffix: Some("after".into()),
+                base: String::from("https://example.com"),
+                text: String::from("human"),
+                prefix: Some(String::from("before")),
+                suffix: Some(String::from("after")),
                 stdin_ignored: false,
             })
         );
