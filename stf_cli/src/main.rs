@@ -5,9 +5,10 @@ use std::{
 
 use clap::Parser;
 
-use inquire::{Confirm, InquireError, Text, required};
+use inquire::{Confirm, InquireError, Text, required, validator::Validation};
 use stf_core::{FragmentError, TextFragment, build_url};
 use thiserror::Error;
+use url::Url;
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
@@ -86,6 +87,15 @@ fn build_fragment_url(
 fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<String>), InquireError> {
     let base = Text::new("What is the base URL?")
         .with_validator(required!("This field is required"))
+        // .with_validator(|input: &str| {
+        //     if Url::parse(input).is_ok() {
+        //         Ok(Validation::Valid)
+        //     } else {
+        //         Ok(Validation::Invalid(
+        //             "not a valid URL -- include the scheme, e.g. https://example.com".into(),
+        //         ))
+        //     }
+        // })
         .with_help_message("e.g. https://example.com")
         .prompt()?;
 
@@ -93,6 +103,11 @@ fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<Strin
         .with_validator(required!("This field is required"))
         .with_help_message("Paste the exact passage you want highlighted")
         .prompt()?;
+
+    if let Ok(preview) = build_fragment_url(&base, text.clone(), None, None) {
+        eprint!("\n preview: {}", preview);
+        eprintln!("   (you can stop here and use this, or continue to disambiguate)\n");
+    }
 
     let wants_disambiguation = Confirm::new("Disambiguate repeated matches with a prefix/suffix?")
         .with_default(false)
