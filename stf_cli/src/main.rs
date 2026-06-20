@@ -2,6 +2,7 @@ use std::process;
 
 use clap::Parser;
 
+use stf_core::FragmentError;
 use thiserror::Error;
 
 fn main() {
@@ -73,10 +74,16 @@ enum ModeError {
     MissingBase,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Error, PartialEq)]
 enum RunError {
-    MissingText,
-    MissingBase,
+    #[error(transparent)]
+    Mode(#[from] ModeError),
+
+    #[error(transparent)]
+    Fragment(#[from] FragmentError),
+
+    #[error("interactive mode isn't implemented yet -- try passing a URL and text directly")]
+    InteractiveNotYetImplemented,
 }
 
 fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError> {
