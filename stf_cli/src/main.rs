@@ -20,6 +20,19 @@ struct Cli {
     verbose: bool,
 }
 
+#[derive(Debug, PartialEq)]
+enum Mode {
+    Interactive,
+    FromStdin { base: String, text: String },
+    Direct { base: String, text: String },
+}
+
+#[derive(Debug, PartialEq)]
+enum ModeError {
+    MissingText,
+    MissingBase,
+}
+
 #[cfg(test)]
 mod tests {
     // use clap::CommandFactory;
