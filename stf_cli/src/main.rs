@@ -84,7 +84,7 @@ fn run(mode: Mode) -> Result<String, RunError> {
     name = "stf",
     version,
     about = "Produce a URL that links directly to specific text in a web page.",
-    after_help = "EXAMPLES:\n    \
+    after_help = "EXAMPLES:\n   \
                 stf https://example.com \"short simple text\"\n   \
                 termux-clipboard-get | stf https://example.com\n   \
                 stf"
