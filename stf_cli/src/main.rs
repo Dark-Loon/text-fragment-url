@@ -53,7 +53,7 @@ fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError
         (None, None, None) => Ok(Mode::Interactive),
         (Some(b), None, Some(t)) => Ok(Mode::FromStdin {
             base: b.clone(),
-            text: t.clone(),
+            text: t,
             prefix: cli.prefix.clone(),
             suffix: cli.suffix.clone(),
         }),
@@ -164,6 +164,16 @@ mod resolve_mode_tests {
         let got = resolve_mode(&cli(Some("https://example.com"), None, None, None), None);
 
         assert_eq!(got, Err(ModeError::MissingText));
+    }
+
+    #[test]
+    fn prefix_without_base_is_missing_base_error() {
+        let mut c = cli(None, None, None, None);
+        c.prefix = Some("before".into());
+
+        let got = resolve_mode(&c, None);
+
+        assert_eq!(got, Err(ModeError::MissingBase));
     }
 
     #[test]
