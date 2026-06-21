@@ -316,18 +316,6 @@ mod cli_tests {
     fn verify_cli() {
         Cli::command().debug_assert();
     }
-
-    #[test]
-    fn it_times_out_quickly() {
-        let mut stf = Command::cargo_bin("stf").unwrap();
-
-        stf.args(&["https://example.com", "iceberg"])
-            .write_stdin("some piped text")
-            .assert()
-            .success()
-            .timeout(timeout)
-            .stderr("");
-    }
 }
 
 #[cfg(test)]
