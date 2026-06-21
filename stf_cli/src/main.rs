@@ -50,7 +50,7 @@ fn main() -> ExitCode {
 
     let result = resolve_mode(&cli, stdin_text)
         .map_err(RunError::from)
-        .and_then(run);
+        .and_then(|mode| run(mode, cli.verbose));
 
     match result {
         Ok(url) => {
@@ -64,11 +64,15 @@ fn main() -> ExitCode {
     }
 }
 
-fn run(mode: Mode) -> Result<String, RunError> {
+fn run(mode: Mode, verbose: bool) -> Result<String, RunError> {
+    if verbose {
+        anstream::eprintln!("{} {:?}", "mode:".cyan().dimmed(), mode);
+    }
+
     match mode {
         Mode::Interactive => {
-            let (base, text, prefix, suffix) = prompt_for_fragment()?;
-            build_fragment_url(&base, text, prefix, suffix)
+            let (base, text, prefix, suffix) = prompt_for_fragment(verbose)?;
+            build_fragment_url(&base, text, prefix, suffix, verbose)
         }
 
         Mode::FromStdin {
@@ -76,7 +80,7 @@ fn run(mode: Mode) -> Result<String, RunError> {
             text,
             prefix,
             suffix,
-        } => build_fragment_url(&base, text, prefix, suffix),
+        } => build_fragment_url(&base, text, prefix, suffix, verbose),
 
         Mode::Direct {
             base,
@@ -91,7 +95,7 @@ fn run(mode: Mode) -> Result<String, RunError> {
                     "note:".yellow().bold()
                 );
             }
-            build_fragment_url(&base, text, prefix, suffix)
+            build_fragment_url(&base, text, prefix, suffix, verbose)
         }
     }
 }
@@ -101,13 +105,19 @@ fn build_fragment_url(
     text: String,
     prefix: Option<String>,
     suffix: Option<String>,
+    verbose: bool,
 ) -> Result<String, RunError> {
     let fragment = TextFragment::new(text, None, prefix, suffix);
+    if verbose {
+        anstream::eprintln!("{} {:?}", "fragment:".cyan().dimmed(), fragment);
+    }
     let url = build_url(base, &fragment)?;
     Ok(url)
 }
 
-fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<String>), InquireError> {
+fn prompt_for_fragment(
+    verbose: bool,
+) -> Result<(String, String, Option<String>, Option<String>), InquireError> {
     let base = Text::new("What is the base URL?")
         .with_validator(required!("This field is required"))
         .with_validator(|input: &str| {
@@ -127,7 +137,7 @@ fn prompt_for_fragment() -> Result<(String, String, Option<String>, Option<Strin
         .with_help_message("Paste the exact passage you want highlighted")
         .prompt()?;
 
-    if let Ok(preview) = build_fragment_url(&base, text.clone(), None, None) {
+    if let Ok(preview) = build_fragment_url(&base, text.clone(), None, None, verbose) {
         anstream::eprint!("\n {} {}", "preview:".cyan().bold(), preview);
         anstream::eprintln!("   (you can stop here and use this, or continue to disambiguate)\n");
     }
@@ -324,7 +334,10 @@ mod run_tests {
         // RunError can't derive PartialEq (InquireError wraps std::io::Error,
         // which doesn't implement it), so we unwrap and compare the String
         // payload directly rather than comparing the whole Result.
-        assert_eq!(run(mode).unwrap(), "https://example.com/#:~:text=iceberg");
+        assert_eq!(
+            run(mode, false).unwrap(),
+            "https://example.com/#:~:text=iceberg"
+        );
     }
 }
 

@@ -2,6 +2,7 @@ use crate::encode::encode_special_characters;
 
 /// Represent the text fragment directive
 /// See: https://wicg.github.io/scroll-to-text-fragment/
+#[derive(Debug)]
 pub struct TextFragment {
     pub start: String,
     pub end: Option<String>,
