@@ -35,7 +35,9 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
 
-    let stdin_text = if cli.text.is_none() && !io::stdin().is_terminal() {
+    let stdin_is_piped = !io::stdin().is_terminal();
+
+    let stdin_text = if cli.text.is_none() && stdin_is_piped {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf).ok();
         let trimmed = buf.trim().to_string();
@@ -48,7 +50,7 @@ fn main() -> ExitCode {
         None
     };
 
-    let result = resolve_mode(&cli, stdin_text)
+    let result = resolve_mode(&cli, stdin_text, stdin_is_piped)
         .map_err(RunError::from)
         .and_then(|mode| run(mode, cli.verbose));
 
@@ -272,7 +274,11 @@ enum RunError {
     Prompt(#[from] InquireError),
 }
 
-fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError> {
+fn resolve_mode(
+    cli: &Cli,
+    stdin_text: Option<String>,
+    stdin_is_piped: bool,
+) -> Result<Mode, ModeError> {
     if cli.base.is_none() && (cli.prefix.is_some() || cli.suffix.is_some()) {
         return Err(ModeError::MissingBase);
     }
@@ -286,11 +292,12 @@ fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError
             suffix: cli.suffix.clone(),
         }),
         (Some(b), Some(t), None) => Ok(Mode::Direct {
+            // If someone runs echo -n "" | stf https://example.com "iceberg", it'll now warn about stdin being ignored even though there was nothing in it
             base: b.clone(),
             text: t.clone(),
             prefix: cli.prefix.clone(),
             suffix: cli.suffix.clone(),
-            stdin_ignored: false,
+            stdin_ignored: stdin_is_piped,
         }),
         (Some(b), Some(t), Some(_)) => Ok(Mode::Direct {
             base: b.clone(),
@@ -363,10 +370,13 @@ mod resolve_mode_tests {
     }
 
     #[test]
-    fn text_arg_takes_priority_over_piped_stdin() {
+    fn text_arg_present_means_stdin_is_flagged_ignored_without_being_read() {
+        //stdin_text is None here on purpose
+        // main() never reads it when cli.text is already Some
         let got = resolve_mode(
             &cli(Some("https://example.com"), Some("hi"), None, None),
-            Some("piped".into()),
+            None,
+            true,
         );
 
         assert_eq!(
@@ -383,7 +393,7 @@ mod resolve_mode_tests {
 
     #[test]
     fn nothing_at_all_is_interactive() {
-        let got = resolve_mode(&cli(None, None, None, None), None);
+        let got = resolve_mode(&cli(None, None, None, None), None, false);
 
         assert_eq!(got, Ok(Mode::Interactive));
     }
@@ -393,6 +403,7 @@ mod resolve_mode_tests {
         let got = resolve_mode(
             &cli(Some("https://example.com"), None, None, None),
             Some("piped".into()),
+            true,
         );
 
         assert_eq!(
@@ -411,6 +422,7 @@ mod resolve_mode_tests {
         let got = resolve_mode(
             &cli(Some("https://example.com"), Some("human"), None, None),
             None,
+            false,
         );
 
         assert_eq!(
@@ -427,7 +439,11 @@ mod resolve_mode_tests {
 
     #[test]
     fn base_alone_with_no_pipe_is_an_error() {
-        let got = resolve_mode(&cli(Some("https://example.com"), None, None, None), None);
+        let got = resolve_mode(
+            &cli(Some("https://example.com"), None, None, None),
+            None,
+            false,
+        );
 
         assert_eq!(got, Err(ModeError::MissingText));
     }
@@ -437,7 +453,7 @@ mod resolve_mode_tests {
         let mut c = cli(None, None, None, None);
         c.prefix = Some("before".into());
 
-        let got = resolve_mode(&c, None);
+        let got = resolve_mode(&c, None, false);
 
         assert_eq!(got, Err(ModeError::MissingBase));
     }
@@ -448,7 +464,7 @@ mod resolve_mode_tests {
         c.prefix = Some("before".into());
         c.suffix = Some("after".into());
 
-        let got = resolve_mode(&c, None);
+        let got = resolve_mode(&c, None, false);
 
         assert_eq!(
             got,
