@@ -35,7 +35,7 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
 
-    let stdin_text = if !io::stdin().is_terminal() {
+    let stdin_text = if cli.text.is_none() && !io::stdin().is_terminal() {
         let mut buf = String::new();
         io::stdin().read_to_string(&mut buf).ok();
         let trimmed = buf.trim().to_string();
