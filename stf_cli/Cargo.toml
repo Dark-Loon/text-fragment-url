@@ -13,7 +13,11 @@ inquire = "0.9.4"
 url = "2.5"
 anstream = "1.0.0"
 owo-colors = "4.3.0"
+
+[dev-dependencies]
 assert_cmd = "2.2.2"
+predicates = "3.1.4"
+wait-timeout = "0.2.1"
 
 [[bin]]
 name = "stf"

@@ -307,6 +307,7 @@ fn resolve_mode(cli: &Cli, stdin_text: Option<String>) -> Result<Mode, ModeError
 
 #[cfg(test)]
 mod cli_tests {
+    use assert_cmd::Command;
     use clap::CommandFactory;
 
     use super::*;
@@ -314,6 +315,18 @@ mod cli_tests {
     #[test]
     fn verify_cli() {
         Cli::command().debug_assert();
+    }
+
+    #[test]
+    fn it_times_out_quickly() {
+        let mut stf = Command::cargo_bin("stf").unwrap();
+
+        stf.args(&["https://example.com", "iceberg"])
+            .write_stdin("some piped text")
+            .assert()
+            .success()
+            .timeout(timeout)
+            .stderr("");
     }
 }
 
