@@ -1,16 +1,22 @@
 [package]
 name = "stf_cli"
-version = "0.1.0"
+version.workspace = true
 edition = "2024"
+description.workspace = true
+license.workspace = true
+readme.workspace = true
+# repository = ""
+# keywords = ""
+# categories = ""
 
 [dependencies]
-stf_core = { path = "../stf_core" }
+stf_core = { version = "0.1.0", path = "../stf_core" }
 clap = { version = "4.5", features = ["derive"] }
 clap_complete_nushell = "4.6.0"
 clap_complete = "4.6.5"
-thiserror = "2"
+thiserror.workspace = true
 inquire = "0.9.4"
-url = "2.5"
+url.workspace = true
 anstream = "1.0.0"
 owo-colors = "4.3.0"
 

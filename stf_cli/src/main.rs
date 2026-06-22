@@ -314,7 +314,6 @@ fn resolve_mode(
 
 #[cfg(test)]
 mod cli_tests {
-    use assert_cmd::Command;
     use clap::CommandFactory;
 
     use super::*;

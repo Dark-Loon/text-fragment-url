@@ -1,9 +1,12 @@
 [package]
 name = "stf_core"
-version = "0.1.0"
+version.workspace = true
 edition = "2024"
+description.workspace = true
+license.workspace = true
+readme.workspace = true
 
 [dependencies]
 urlencoding = "2"
-thiserror = "2"
-url = "2.5"
+thiserror.workspace = true
+url.workspace = true
