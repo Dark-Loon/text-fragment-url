@@ -1,10 +1,12 @@
 [package]
-name = "stf_core"
+name = "stf-core"
 version.workspace = true
 edition = "2024"
 description.workspace = true
 license.workspace = true
 readme.workspace = true
+repository.workspace = true
+categories = [ "encoding", "web-programming" ]
 
 [dependencies]
 urlencoding = "2"

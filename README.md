@@ -1,76 +1,97 @@
-# stf — Scroll to Text Fragments
+<!-- [![Crates.io](https://img.shields.io/crates/v/stf_cli.svg)](https://crates.io/crates/stf_cli) -->
+<!-- [![License](https://img.shields.io/crates/l/stf_cli.svg)](#license) -->
+
+# stf
 
 Produce a URL that links directly to specific text in a web page. When opened, the browser highlights the text and scrolls it into view.
 
-`stf` is a command-line tool for generating these links: give it a URL and a block of text, get back a shareable deep link that works in any modern browser.
+## Demo
 
 <!-- TODO: embed demo GIF here showing all three modes -->
+<!-- [![Crates.io](https://img.shields.io/crates/v/stf_cli.svg)](https://crates.io/crates/stf_cli) -->
 
-## Platform support
+## Features
 
-- Linux, macOS, Windows (native)
-- Android, via [Termux](https://termux.dev)
+- Three ways to use it: pass text directly, pipe it in, or answer an interactive prompt
+- Works with any script, including right-to-left text
+- `--prefix`/`--suffix` to disambiguate text that appears more than once on a page
+- Shell completions for bash, zsh, fish, PowerShell, and Nushell
+- Linux, macOS, Windows, and Android (via Termux)
 
 ## Install
 
 ```bash
-cargo install --git https://github.com/you/text-fragment-url --locked -p stf_cli
+cargo install stf-cli
 ```
 
-> Requires the Rust toolchain. Prebuilt binaries and a crates.io release are planned — not yet available.
+> Requires the Rust toolchain. On Termux, install it first with `pkg install rust` — the first build will take a few minutes to compile on-device.
+```bash
+pkg install rust
+cargo install stf-cli
+```
+
+To install the latest unreleased version straight from source instead:
+
+```bash
+cargo install --git https://github.com/you/text-fragment-url --locked -p stf-cli
+```
 
 ## Usage
 
-`stf` supports three ways of providing input.
-
-### 1. Direct mode
+### Direct mode
 
 ```bash
 stf https://example.com "short simple text"
 ```
 
-### 2. Clipboard / pipe mode
+### Clipboard / pipe mode
 
-Pipe text in from anywhere — a clipboard tool, a file, another command. On Termux:
-
-```bash
-termux-clipboard-get | stf https://example.com
-```
-
-On Linux with Wayland:
+Pipe text in from anywhere — a clipboard tool, a file, another command.
 
 ```bash
-wl-paste | stf https://example.com
+termux-clipboard-get | stf https://example.com   # Termux
+wl-paste | stf https://example.com               # Wayland
+xclip -selection clipboard -o | stf https://example.com   # X11
 ```
 
-On Linux with X11:
+### Interactive mode
 
-```bash
-xclip -selection clipboard -o | stf https://example.com
-```
-
-### 3. Interactive mode
-
-Run `stf` with no arguments for a guided prompt — it asks for the URL and text, shows you a live preview, and offers to walk you through disambiguation if needed.
+Run with no arguments for a guided prompt, with a live preview as you go.
 
 ```bash
 stf
 ```
 
-## Disambiguating repeated text
+<details>
+<summary>Quick links on Android, with one setup step</summary>
 
-If your text appears more than once on the page, use `--prefix`/`-p` and `--suffix`/`-s` to anchor the match to surrounding text:
+<br>
+
+Out of the box, clipboard mode still needs you to type the URL yourself. To skip that, set up Termux's share-target script so the page URL is handed to `stf` automatically:
 
 ```bash
-stf https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a \
-  "The Referer" \
-  --prefix "downgrade:" \
-  --suffix "to origins"
+mkdir -p ~/bin
+cat > ~/bin/termux-url-opener << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+termux-clipboard-get | stf "$1" | termux-clipboard-set
+termux-toast "Link copied"
+EOF
+chmod +x ~/bin/termux-url-opener
+```
+
+Then, day to day: select text on a page → **Copy** → tap **Share** → choose **Termux**. The link is generated and copied to your clipboard automatically, ready to paste. Requires the [Termux:API](https://wiki.termux.com/wiki/Termux:API) app.
+
+</details>
+
+## Disambiguating repeated text
+
+If your text appears more than once on the page, anchor the match with `--prefix`/`-p` and `--suffix`/`-s`:
+
+```bash
+stf https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a "The Referer" --prefix "downgrade:" --suffix "to origins"
 ```
 
 ## Non-English and right-to-left scripts
-
-Text fragments work with any script — `stf` percent-encodes everything correctly, including right-to-left text:
 
 ```bash
 stf https://example.com "مِصر" --prefix "البحرين"
@@ -85,9 +106,12 @@ stf https://example.com "مِصر" --prefix "البحرين"
 | `-s`, `--suffix` | Text immediately after the match, to disambiguate repeated occurrences |
 | `-v`, `--verbose` | Print details about how the URL was constructed |
 | `--completions <SHELL>` | Generate a shell completion script and print it to stdout |
-| `-h`, `--help` | Print usage and an exhaustive list of flags |
+| `-h`, `--help` | Print usage |
 
-## Autocompletions
+<details>
+<summary>Shell completions setup</summary>
+
+<br>
 
 ```bash
 # bash
@@ -109,33 +133,55 @@ stf --completions nushell o> ~/.cache/stf/completions.nu
 # then in config.nu: source ~/.cache/stf/completions.nu
 ```
 
+</details>
+
 ## Notes and limitations
 
 - If the text fragment doesn't match anything in the linked document, or the browser doesn't support text fragments, the fragment is silently ignored and the page just loads at the top.
 - If a fragment doesn't seem to highlight even though the syntax looks right, you may be matching a different occurrence than the one you expected — it might be highlighted, just offscreen.
 - All major browsers added support by late 2024. Older devices (iOS 15 or earlier, very old Chrome/Firefox) open the link fine but silently ignore the fragment.
-- Some sites opt out of this feature entirely via the `Document-Policy: force-load-at-top` header — GitHub is one example, and links to it won't scroll or highlight regardless of how correct the URL is.
+- Some sites opt out via the `Document-Policy: force-load-at-top` header — GitHub is one example.
 
-## How it works
 
-A text fragment directive looks like:
+## Roadmap
 
-```
-#:~:text=[prefix-,]textStart[,textEnd][,-suffix]
-```
+Multi-sentence range matching (`textStart,textEnd`) is already supported internally by `stf_core`, just not yet exposed as a CLI flag. This is what makes long passages reliable instead of being treated as one giant block — next up.
 
-`stf` currently builds `textStart` plus optional `prefix`/`suffix`. Multi-segment ranges (`textStart,textEnd`) are already supported internally by the underlying library and are next up on the roadmap for the CLI — see below.
 
-## Development plan
+## License
 
-- expose `textEnd` range-matching as a CLI flag (the library already supports it; not yet wired up to `stf`'s arguments) — this is the natural fit for long, multi-sentence passages
-- multiple highlights in one URL
-- accept `text == "-"` as an unambiguous "force stdin" override (not needed for v1)
-- notify when a text passage isn't found on the page — would require fetching the page over HTTP to verify; watch out for double-encoding when using HTTP clients (like `reqwest`) that have their own URL-encoding methods
-- crates.io release, prebuilt binaries
+Licensed under either of
+
+ * Apache License, Version 2.0
+   ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+ * MIT license
+   ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+
+at your option.
+
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
+
 
 ## Acknowledgements
 
 Text Fragments was implemented and specified by [Nick Burris](https://github.com/nickburris) and [David Bokan](https://github.com/bokand), with contributions from [Grant Wang](https://github.com/grantjwang).
 
 Built with assistance from [Claude](https://claude.ai).
+
+
+
+
+
+
+
+
+
+
+
+
+

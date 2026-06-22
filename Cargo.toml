@@ -7,8 +7,11 @@ version = "0.1.0"
 description = "Produce a URL that links directly to specific text in a web page."
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+repository = "https://gitlab.com/Dark-Loon/scroll-to-text-fragments"
+keywords = [ "deeplink", "text-fragment", "url", "highlight", "permalink" ]
+categories = [ "command-line-utilities", "encoding" ]
 
 [workspace.dependencies]
-url = "2.5"
 thiserror = "2"
+url = "2.5"
 
