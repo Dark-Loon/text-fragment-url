@@ -2,7 +2,7 @@ use crate::encode::encode_special_characters;
 
 /// Represent the text fragment directive
 /// See: https://wicg.github.io/scroll-to-text-fragment/
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TextFragment {
     pub start: String,
     pub end: Option<String>,
@@ -74,16 +74,14 @@ mod tests {
 
     #[test]
     fn normalizes_newlines_and_tabs_to_spaces() {
-        let f = TextFragment::new(
-            "first line\nsecond line".into(), None, None, None);
+        let f = TextFragment::new("first line\nsecond line".into(), None, None, None);
 
         assert_eq!(f.start, "first line second line");
     }
 
     #[test]
     fn normalizes_windows_line_endings() {
-        let f = TextFragment::new(
-            "first line\r\nsecond line".into(), None, None, None);
+        let f = TextFragment::new("first line\r\nsecond line".into(), None, None, None);
 
         assert_eq!(f.start, "first line second line");
     }
