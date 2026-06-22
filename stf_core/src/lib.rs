@@ -1,4 +1,4 @@
-pub mod encode;
+pub(crate) mod encode;
 pub mod fragment;
 pub mod url;
 
