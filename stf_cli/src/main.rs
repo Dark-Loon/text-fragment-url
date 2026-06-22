@@ -217,7 +217,7 @@ struct Cli {
     completions: Option<CompletionShell>,
 }
 
-/// The shells we can generate completions for. A thin wrapper around
+/// The shells one can generate completions for. A thin wrapper around
 /// clap_complete::Shell plus Nushell, since the two crates' generator types
 /// can't share a single enum directly
 #[derive(Copy, Clone, Debug, ValueEnum)]

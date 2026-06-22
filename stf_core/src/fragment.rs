@@ -1,7 +1,11 @@
 use crate::encode::encode_special_characters;
 
-/// Represent the text fragment directive
-/// See: https://wicg.github.io/scroll-to-text-fragment/
+/// A text fragment directive for deep-linking to specific text on a page.
+///
+/// When appended to a URL, a text fragment instructs the browser to scroll to
+/// and highlight the matched text.
+///
+/// See the [Text Fragments spec](https://wicg.github.io/scroll-to-text-fragment).
 #[derive(Debug, Clone, PartialEq)]
 pub struct TextFragment {
     pub start: String,
@@ -10,11 +14,26 @@ pub struct TextFragment {
     pub suffix: Option<String>,
 }
 
-// TextFragment::from_text(text: &str, prefix: Option<String>, suffix: Option<String>) -> TextFragment
-//   - char count or grapheme count for the 300 threshold?
-//   - 300 words for range mode?
-//   - unicode-segmentation for word boundaries (handles RTL correctly?)
 impl TextFragment {
+    /// Create a new `TextFragment`, normalizing all whitespace in every field.
+    ///
+    /// Newlines, tabs, and runs of spaces are each collapsed to a single space,
+    /// matching how browsers normalize whitespace when matching against
+    /// rendered page text.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use stf_core::TextFragment;
+    /// let fragment = TextFragment::new(
+    ///    "specific text".into(),
+    ///    None,
+    ///    Some("prefix text".into()),
+    ///    None,
+    /// );
+    /// assert_eq!(fragment.start, "specific text");
+    ///
+    /// ```
     pub fn new(
         start: String,
         end: Option<String>,
@@ -29,6 +48,10 @@ impl TextFragment {
         }
     }
 
+    /// Render this fragment as a `#:~:text=` directive string.
+    ///
+    /// The returned string is percent-encoded and ready to append to a base URL.
+    /// For full URL construction, prefer [`build_url`](crate::build_url).
     pub fn to_directive(&self) -> String {
         let mut string = String::from("#:~:text=");
         let comma = ",";

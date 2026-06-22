@@ -10,6 +10,27 @@ use crate::fragment::TextFragment;
 /// Returns [`FragmentError::EmptyTextStart`] if `fragment.start` is empty or whitespace-only.
 ///
 /// Returns [`FragmentError::InvalidBaseUrl`] if `base` cannot be parsed as a valid URL.
+///
+/// # Examples
+///
+/// ```
+/// # use std::error::Error;
+/// # fn main() -> Result<(), Box<dyn Error>> {
+/// use stf_core::{TextFragment, build_url};
+///
+/// let fragment = TextFragment::new(
+///    "specific text".into(),
+///    None,
+///    None,
+///    None,
+/// );
+///
+/// let url = build_url("https://example.com", &fragment)?;
+/// assert_eq!(url, "https://example.com/#:~:text=specific%20text");
+/// #     Ok(())
+/// # }
+///
+/// ```
 pub fn build_url(base: &str, fragment: &TextFragment) -> Result<String, FragmentError> {
     if fragment.start.trim().is_empty() {
         return Err(FragmentError::EmptyTextStart);
