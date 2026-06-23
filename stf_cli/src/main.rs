@@ -140,7 +140,7 @@ fn prompt_for_fragment(
         .prompt()?;
 
     if let Ok(preview) = build_fragment_url(&base, text.clone(), None, None, verbose) {
-        anstream::eprint!("\n {} {}", "preview:".cyan().bold(), preview);
+        anstream::eprint!("\n {}\n{}", "preview:".cyan().bold(), preview);
         anstream::eprintln!("   (you can stop here and use this, or continue to disambiguate)\n");
     }
 

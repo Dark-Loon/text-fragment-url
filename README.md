@@ -2,26 +2,20 @@
 
 Produce a URL that links directly to specific text in a web page. When opened, the browser highlights the text and scrolls it into view.
 
-<!-- [![Crates.io](https://img.shields.io/crates/v/stf-cli.svg)](https://crates.io/crates/stf-cli) -->
-<!-- [![License](https://img.shields.io/crates/l/stf-cli.svg)](#license) -->
-<!-- [<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-stf-cli-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/stf-cli) -->
+[![Crates.io](https://img.shields.io/crates/v/stf-cli.svg)](https://crates.io/crates/stf-cli)
+[![License](https://img.shields.io/crates/l/stf-cli.svg)](#license)
+[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-stf-cli?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/stf-cli)
 
 
 ## Demo
 
-<!-- TODO: Termux share GIF once set up -->
-![Animated GIF making a demonstration of stf's three modes: direct, interactive, and clipboard](./assets/demo.gif)
-
-> You can replay this in your terminal: `asciinema play ./assets/demo.cast`
+<!-- <img src="./assets/demo-mobile.gif" width="280" alt="Mobile demo"> -->
+<img src="./assets/demo-desktop.gif" width="600" alt="Desktop demo">
 
 
 ## Install
 
-```bash
-cargo install stf-cli
-```
-
-On Termux (Android):
+**On Termux (Android)**:
 
 ```bash
 pkg install rust
@@ -29,6 +23,14 @@ cargo install stf-cli
 ```
 
 The first build will take a few minutes to compile on-device.
+
+**Desktop**:
+
+```bash
+cargo install stf-cli
+```
+
+Requires Rust
 
 
 ## Mobile (Android + Termux)
@@ -39,17 +41,19 @@ The first build will take a few minutes to compile on-device.
 2. In Termux: `termux-clipboard-get | stf https://the-page-url.com`
 3. Done
 
-**Recommended: one-time setup**:
+**Recommended one-time setup**:
 
 Requires the [Termux:API](https://wiki.termux.com/wiki/Termux:API) app.
 
 ```bash
 mkdir -p ~/bin
+
 cat > ~/bin/termux-url-opener << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
 termux-clipboard-get | stf "$1" | termux-clipboard-set
 termux-toast "Link copied"
 EOF
+
 chmod +x ~/bin/termux-url-opener
 ```
 
