@@ -9,8 +9,8 @@ Produce a URL that links directly to specific text in a web page. When opened, t
 
 ## Demo
 
-<!-- <img src="./assets/demo-mobile.gif" width="280" alt="Mobile demo"> -->
-<img src="./assets/demo-desktop.gif" width="600" alt="Desktop demo">
+<!-- <img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/main/assets/demo-mobile.gif" width="280" alt="Mobile demo"> -->
+<img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/main/assets/demo-desktop.gif" width="600" alt="Desktop demo">
 
 
 ## Install
@@ -35,42 +35,46 @@ Requires Rust
 
 ## Mobile (Android + Termux)
 
-**Basic clipboard mode**:
+The most reliable workflow on Android is **interactive mode**.
 
-1. Long-press text in browser → **Copy**
-2. In Termux: `termux-clipboard-get | stf https://the-page-url.com`
-3. Done
+Requires Termux, the [Termux:API](https://wiki.termux.com/wiki/Termux:API) app as well as the termux-api package.
 
-**Recommended one-time setup**:
-
-Requires the [Termux:API](https://wiki.termux.com/wiki/Termux:API) app.
+Install the Termux:API, then:
 
 ```bash
-mkdir -p ~/bin
+pkg install termux-api
 
-cat > ~/bin/termux-url-opener << 'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-termux-clipboard-get | stf "$1" | termux-clipboard-set
-termux-toast "Link copied"
-EOF
-
-chmod +x ~/bin/termux-url-opener
+# Add Cargo's bin directory to your PATH if not already present:
+echo 'export PATH="$PATH:$HOME/.cargo/bin"' >> ~/.bashrc && source ~/.bashrc
 ```
 
-Then:
-
-1. Long-press text in browser → **Copy**
-2. Tap **Share** → **Termux**
-3. Done
-
-
-## Direct
-
+Then run interactively:
 ```bash
-stf https://example.com "short simple text"
+stf
 ```
+<!-- ```bash -->
+<!-- # Inside Termux, install the termux-api package: -->
+<!-- pkg install termux-api -->
 
-For text with quotes or spanning multiple paragraphs, use interactive mode.
+<!-- # Add Cargo's bin directory to your PATH if not already present: -->
+<!-- echo 'export PATH="$PATH:$HOME/.cargo/bin"' >> ~/.bashrc && source ~/.bashrc -->
+
+<!-- mkdir -p ~/bin -->
+
+<!-- cat > ~/bin/termux-url-opener << 'EOF' -->
+<!-- #!/data/data/com.termux/files/usr/bin/bash -->
+<!-- termux-clipboard-get | stf "$1" | termux-clipboard-set -->
+<!-- termux-toast "Link copied" -->
+<!-- EOF -->
+
+<!-- chmod +x ~/bin/termux-url-opener -->
+<!-- ``` -->
+
+<!-- Then: -->
+
+<!-- 1. Long-press text in browser → **Copy** -->
+<!-- 2. Tap **Share** → **Termux** -->
+<!-- 3. Done -->
 
 
 ## Interactive
@@ -79,7 +83,17 @@ For text with quotes or spanning multiple paragraphs, use interactive mode.
 stf
 ```
 
-Guided prompt with a live preview. Press Enter through each step.
+Interactive mode is the simplest approach and handles any URL, including those with special characters, as well as any text with quotes or spanning multiple paragraphs.
+
+
+## Direct
+
+```bash
+stf https://example.com "short simple text"
+```
+
+For text with quotes, spanning multiple paragraphs, or URLs with special characters, use interactive mode.
+
 
 ## Clipboard / pipe
 
@@ -88,6 +102,8 @@ wl-paste | stf https://example.com               # Wayland
 xclip -selection clipboard -o | stf https://example.com   # X11
 termux-clipboard-get | stf https://example.com   # Termux
 ```
+
+For URLs with special characters, quote them or use interactive mode.
 
 
 ## Disambiguating repeated text
@@ -139,14 +155,16 @@ stf --completions nushell o> ~/.cache/stf/completions.nu
 
 ## Notes
 
+- Quote URLs that contain parentheses or other shell-special characters (e.g. "https://en.wikipedia.org/wiki/King_Roger_(opera)")
 - Works with any writing system, including right-to-left text (Arabic, Hebrew, etc.)
-- If the browser doesn't support text fragments, or nothing matches, the link just loads the page normally.
-- Some sites opt out via `Document-Policy: force-load-at-top` (GitHub is one).
+- If the browser doesn't support text fragments, or nothing matches, the link just loads the page normally
+- Some sites opt out via `Document-Policy: force-load-at-top` (GitHub is one)
 
 ## Roadmap
 
 - Better handling of long passages with a start/end range
 - Fetch the page and verify the fragment actually matches before returning the URL
+- Improve the setup on mobile to get a link with the click of a share button (currently returns TermuxFileReceiver error)
 
 ## License
 
