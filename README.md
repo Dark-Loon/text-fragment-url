@@ -10,7 +10,7 @@ Produce a URL that links directly to specific text in a web page. When opened, t
 ## Demo
 
 <!-- <img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/main/assets/demo-mobile.gif" width="280" alt="Mobile demo"> -->
-<img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/main/assets/demo-desktop.gif" width="600" alt="Desktop demo">
+<img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/abc1234/assets/demo-desktop.gif" width="600" alt="Desktop demo">
 
 
 ## Install
@@ -162,7 +162,6 @@ stf --completions nushell o> ~/.cache/stf/completions.nu
 
 ## Roadmap
 
-- Better handling of long passages with a start/end range
 - Fetch the page and verify the fragment actually matches before returning the URL
 - Improve the setup on mobile to get a link with the click of a share button (currently returns TermuxFileReceiver error)
 
