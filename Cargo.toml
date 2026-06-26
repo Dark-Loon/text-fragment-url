@@ -12,6 +12,7 @@ keywords = [ "deeplink", "text-fragment", "url", "highlight", "permalink" ]
 categories = [ "command-line-utilities", "encoding" ]
 
 [workspace.dependencies]
+stf-core = { version = "0.2.0", path = "stf_core" }
 thiserror = "2"
 url = "2.5"
 
