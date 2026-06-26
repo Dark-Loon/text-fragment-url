@@ -10,7 +10,7 @@ Produce a URL that links directly to specific text in a web page. When opened, t
 ## Demo
 
 <!-- <img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/main/assets/demo-mobile.gif" width="280" alt="Mobile demo"> -->
-<img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/abc1234/assets/demo-desktop.gif" width="600" alt="Desktop demo">
+<img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/d2d6baeeec0cf21a7ae50f59b619433f522431c7/assets/demo-desktop.gif" width="600" alt="Desktop demo">
 
 
 ## Install
