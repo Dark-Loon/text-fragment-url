@@ -9,8 +9,11 @@ Produce a URL that links directly to specific text in a web page. When opened, t
 
 ## Demo
 
-<!-- <img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/main/assets/demo-mobile.gif" width="280" alt="Mobile demo"> -->
-<img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/27b9f38fdc9ec2a566f4c3427767cee5c72901db/assets/demo-desktop.gif" width="600" alt="Desktop demo">
+<div align="center">
+  <img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/27b9f38fdc9ec2a566f4c3427767cee5c72901db/assets/demo-desktop.gif" width="600" alt="Desktop demo">
+  <br><br>
+  <img src="https://gitlab.com/Dark-Loon/scroll-to-text-fragments/-/raw/c152c3772901db37d7f38860eef230be8700da99/assets/demo-mobile.gif" width="280" alt="Mobile demo">
+</div>
 
 
 ## Install
@@ -22,59 +25,59 @@ pkg install rust
 cargo install stf-cli
 ```
 
-The first build will take a few minutes to compile on-device.
-
 **Desktop**:
 
 ```bash
 cargo install stf-cli
 ```
 
-Requires Rust
+Requires [Rust](https://www.rust-lang.org/tools/install).
 
 
 ## Mobile (Android + Termux)
 
-The most reliable workflow on Android is **interactive mode**.
-
 Requires Termux, the [Termux:API](https://wiki.termux.com/wiki/Termux:API) app as well as the termux-api package.
 
-Install the Termux:API, then:
-
+Install Termux:API, then:
 ```bash
 pkg install termux-api
 
 # Add Cargo's bin directory to your PATH if not already present:
 echo 'export PATH="$PATH:$HOME/.cargo/bin"' >> ~/.bashrc && source ~/.bashrc
+
+mkdir -p ~/bin
+
+cat > ~/bin/termux-url-opener << 'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+
+export PATH="$PATH:$HOME/.cargo/bin"
+
+URL=$(echo "${1:-$(termux-clipboard-get)}" | grep -oP 'https?://\S+' | head -1)
+
+if [ -z "$URL" ]; then
+  termux-toast "No URL found"
+  exit 1
+fi
+
+SELECTED=$(termux-clipboard-get)
+
+if [ -z "$SELECTED" ]; then
+  termux-toast "Copy some text first"
+  exit 1
+fi
+
+echo "$SELECTED" | stf "$URL" | termux-clipboard-set
+termux-toast "Fragment link copied!"
+EOF
+
+chmod +x ~/bin/termux-url-opener
 ```
 
-Then run interactively:
-```bash
-stf
-```
-<!-- ```bash -->
-<!-- # Inside Termux, install the termux-api package: -->
-<!-- pkg install termux-api -->
+Then:
 
-<!-- # Add Cargo's bin directory to your PATH if not already present: -->
-<!-- echo 'export PATH="$PATH:$HOME/.cargo/bin"' >> ~/.bashrc && source ~/.bashrc -->
-
-<!-- mkdir -p ~/bin -->
-
-<!-- cat > ~/bin/termux-url-opener << 'EOF' -->
-<!-- #!/data/data/com.termux/files/usr/bin/bash -->
-<!-- termux-clipboard-get | stf "$1" | termux-clipboard-set -->
-<!-- termux-toast "Link copied" -->
-<!-- EOF -->
-
-<!-- chmod +x ~/bin/termux-url-opener -->
-<!-- ``` -->
-
-<!-- Then: -->
-
-<!-- 1. Long-press text in browser → **Copy** -->
-<!-- 2. Tap **Share** → **Termux** -->
-<!-- 3. Done -->
+1. Long-press text in browser → **Copy**
+2. Tap **Share** → **Termux**
+3. Done
 
 
 ## Interactive
@@ -157,13 +160,13 @@ stf --completions nushell o> ~/.cache/stf/completions.nu
 
 - Quote URLs that contain parentheses or other shell-special characters (e.g. "https://en.wikipedia.org/wiki/King_Roger_(opera)")
 - Works with any writing system, including right-to-left text (Arabic, Hebrew, etc.)
+- Does not work with PDF URLs, as browsers don't apply text fragments to PDF viewers
 - If the browser doesn't support text fragments, or nothing matches, the link just loads the page normally
 - Some sites opt out via `Document-Policy: force-load-at-top` (GitHub is one)
 
 ## Roadmap
 
 - Fetch the page and verify the fragment actually matches before returning the URL
-- Improve the setup on mobile to get a link with the click of a share button (currently returns TermuxFileReceiver error)
 
 ## License
 
