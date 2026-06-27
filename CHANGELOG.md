@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-27
+### Changed
+- Improved README: mobile setup instructions, PDF limitation note, Rust install link
+
 ## [0.2.0] - 2026-06-26
 ### Added
 - Automatic range feature for long text passages over 150 characters
